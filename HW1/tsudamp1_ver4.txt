@@ -1,0 +1,200 @@
+/* -----------------------------------------------------------------------------
+Program file: tsudamp1.c 
+Author:       Makiko Tsuda
+Date:         9/8/2021
+Class:		  Intro to Programming with C Part 2
+Assignment:   #1 
+Objective:    The program determines the minimum grade, maximum grade, median grade and 
+ 			  average of a class. The program should first prompt for class name, 
+			  and then allow user to select how many grades validated(at least 5, 
+			  but no more than the number of data).
+------------------------------------------------------------------------------*/
+
+#include <stdio.h>
+
+/* Function Prototypes */
+int bubble_sort(int[], int);
+int search_array(int, int[], int);
+
+int main(void) 
+{
+	/* Variable Declarations */
+	char class_name[50];		/* For the name of the class */
+	int  num_grades;			/* How many grades to stor   */
+	int  grade[30];				/* Store the grades in the original order */
+	int  idno[30] = {11111,22222,33333,44444,55555,66666,77777,12345,67890,56789};
+	char name[30][20] =
+	{
+		"Jeorge Sanchez", "Ali Wang", "Jane Smith", "Ginika Adichie", 
+		"Bill Bailey", "Carl Marks", "Joy Fully", "Chris Tal", 
+		"Miki Yamada", "Junyuan Kim"
+	};							/* Students' Names */
+	int   total_grade = 0;		/* Initialize it to zero */
+	float avg_grade = 0;		/* Initialize it to zero */
+	char  c; 					/* For buffer clearing */
+	int   i, x;	 				/* Counter values */
+	int   input;				/* Grade value entered by a user */
+	char  changed = 'T';   		/* a flag to indicate if a swap was made */
+	int   sorted_grades[30];  	/* This array store the grades in ascending order */
+	float median = 0;			/* Median */
+	int   found_array [30];		/* To Store which index to skip when searching */
+	
+	/* Prompt for the Name of the class and the number of grades */
+	printf("Enter Class Name: ");
+	scanf("%50[^\n]s", class_name);
+ 	while((c = getchar() != '\n') && c != EOF); /* clear buffer */
+ 	
+	printf("The number of grades to process: ");
+	scanf("%d", &num_grades);
+ 	while((c = getchar() != '\n') && c != EOF); /* clear buffer */
+ 	
+ 	/* Have the uer enter the grades */
+ 	printf("Enter grade for %d students: ", num_grades);
+ 	printf("\n\n");
+ 	printf("Enter Class Name: %s\n", class_name);	 
+ 	printf("The number of grades to process: %d\n", num_grades);
+ 	printf("Enter grade for %d students: \n", num_grades);
+ 	
+	/* Get the grade for each student and store them in the grade array */
+ 	for (i=0; i<num_grades; i++) 
+ 	{ 
+ 		/* Trap Loop to check the input value  */
+		do
+		{	
+	 		printf("%s %d ", name[i], idno[i]);
+	 		scanf("%d", &input);
+	 		while ( (c = getchar() != '\n') && c != EOF); /* clear buffer */
+	 		
+			/* A grade should be between 0 and 100 */
+			if (input < 0 || input > 100)
+			{
+				printf("A grade should be between 0 and 100.\nPlease re-enter!\n\n");
+			} /* End if */
+			else
+			{
+				grade[i] = input;
+			} /* End else */
+		} while (input < 0 || input > 100); /* End do while */
+		
+		total_grade = total_grade + grade[i]; /* Keep the running total */
+		
+ 	} /* End of for */
+ 	
+ 	/* Copying the original array to another array  */
+ 	/* So that the original order can be referenced */
+    for ( i = 0; i < num_grades; i++ ) {     
+        sorted_grades[i] = grade[i];     
+    } /* End for */
+	
+	bubble_sort(sorted_grades, num_grades);
+		
+	/* Print the grade report */
+	printf("\n\n");	
+ 	printf("Sorted Grade Report for %s ", class_name);	
+ 	printf("\n\n");	
+ 	printf("Student Name \t\t ID \t\t Grade \n");
+	
+	/* Print the sorted grages */
+	for( i = 0; i < num_grades; i++ )
+	{
+		/* Take a value from the begining of the sorted array */
+		/* Find the value in the original array 		      */
+		/* Get the array index of that value				  */
+		/* Get the Student Name and the Student ID from the   */
+		/* other arrays at that index                         */		
+
+		/* If the value is found in array, exit loop. */
+		for( x = 0; x < num_grades; x++ ) 
+		{
+			/* if the value was found and the value at the array position */
+			/* has not already been used (to handle duplicate values)     */
+			/* then, found a match !									  */
+			if( grade[x] == sorted_grades[i] & !search_array(x, found_array, i) ) 
+			{ 
+				printf("%s \t\t %d \t\t %d\n", name[x], idno[x], grade[x]);
+				found_array[i] = x;	
+				break; 	
+			} /* End if */						
+		} /* End for */
+	} /* End for
+	
+	/* Find a median */
+	if(num_grades%2 == 0) /* if even number of data */
+	{
+		
+		median = (float)(sorted_grades[num_grades/2 - 1] + sorted_grades[num_grades/2])/2;	
+	} /* End if */
+	else /* if odd number of data */
+	{
+		median = sorted_grades[(num_grades-1)/2];
+	} /* End else */
+	
+	/* Print the min, max, median */
+	printf("\n\n");
+	printf("The maximum is %d\n", sorted_grades[0]);
+	printf("The minimum is %d\n", sorted_grades[num_grades-1]);
+	printf("The median is %.1f\n", median);
+	printf("\n\n");
+	 	
+	 /* Finally Calculate the average */	
+	avg_grade = (float)total_grade / num_grades;
+	printf("The average of %s is %.1f", class_name, avg_grade);
+	
+ 	getchar(); /* to suspend the program before exiting */
+	  
+ 	return 0;
+} /* End Main */
+
+/* Use the "Bubble Sort" algorithm to sort array in descending order. */
+/* adapted from class notes Sorting Arrays.pdf						  */
+int bubble_sort(int array[], int num_elements)
+{
+	/* Declare and initialize variables */
+	
+	char changed = 'T';	/* a flag to indicate if a swap happened */
+	int  x, temp;		
+	
+	while (changed == 'T') /* if no swap made, we are done.*/
+ 	{
+ 		changed = 'F';
+ 		/* For every element in the array starting at first, test if "this" */
+ 		/* element is greater than the "next" element. If so, swap them. */
+ 		for (x = 0; x < num_elements-1; x++)
+ 		{
+ 			if ( array[x] < array[x + 1])
+ 			{
+ 				/* Swap needs to be made.*/
+ 				temp = array[x];
+ 				array[x] = array[x+1];
+ 				array[x+1] = temp;
+ 				/* Set flag indicating that a swap was made. This ensures that */
+ 				/* processing will continue, until nothing needs to be swapped. */
+ 				changed = 'T';
+ 			} /* end if */
+ 		} /* end for */
+ 	} /* end while*/
+ 	return 0;
+} /* end bubble_sort */
+
+/* This function is used to check if the given value */
+/* has been already found in the grade array	     */		
+int search_array (int num_to_search, int nums[], int num_elements)
+{
+	/* Declare and initialize variables. */
+	int found = 0; 	/* flag to indicate if value was found in array. */
+	int i;			/* A Counter */
+	
+	/* Use "linear search" algorithm to search for value in array. */
+	for (i = 0; i < num_elements; i++) {
+		/* If the value is found in array, set flag and exit loop. */
+		if ( nums[i] == num_to_search ) 
+		{ 
+			found = 1;
+			break; 
+		} /* end if */
+	} /* End for */
+	
+	/* Return the status */
+	return found;	
+} /* End of search_array */
+
