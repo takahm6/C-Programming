@@ -55,7 +55,7 @@ struct information
 {
 	struct name fullname;
 	struct address addr;
-	struct date dd;
+	struct date sdate;
 };
 
 int main(void) 
@@ -92,6 +92,7 @@ int main(void)
 	for ( i = 0; i < num_people; i++ )
 	{
  		/* Prompt user for first name. */
+		printf ("\n");
  		printf ("Friend # %d : ",i+1);
 		printf ("\n");
      	printf ("Enter first name: ");
@@ -128,6 +129,28 @@ int main(void)
 				printf("Please re-enter a valid zip code. \n");	
 									   
 		} while (zipok == 0); /* End while */
+		
+		/* Prompt user for date */
+		do
+		{
+     		printf ("Enter date (mm/dd/yyyy): ");
+     		scanf ("%d/%d/%d", &info[i].sdate.mm, &info[i].sdate.dd, &info[i].sdate.yyyy); 
+     		while ((c = getchar() != '\n') && c != EOF); /* clear buffer */
+     		
+     		if ( info[i].sdate.mm < 1 || info[i].sdate.mm > 12 )
+     		{
+     			printf("Invalid date. Please re-enter\n\n");
+     		} /* End if */
+     		if ( info[i].sdate.dd < 1 || info[i].sdate.dd > 31 )
+     		{
+     			printf("Invalid date. Please re-enter\n\n");
+     		} /* End if */
+     		if ( info[i].sdate.yyyy < 1 )
+     		{
+     			printf("Invalid date. Please re-enter\n\n");
+     		} /* End if */
+		} while ( (info[i].sdate.mm < 1 || info[i].sdate.mm > 12) || 
+			(info[i].sdate.dd < 1 || info[i].sdate.dd > 31) || info[i].sdate.yyyy < 1 ); /* End while */
      	
 	}/* End for loop */
 	printf("\n");
@@ -139,20 +162,8 @@ int main(void)
 	{
 		printf("%s %s\n", info[i].fullname.first_name, info[i].fullname.last_name);
 		printf("%s %s, %s %.5d\n", info[i].addr.street, info[i].addr.city, info[i].addr.state, atoi(info[i].addr.zip));
+		printf("%d/%d/%d\n", info[i].sdate.mm, info[i].sdate.dd, info[i].sdate.yyyy);
 	}
-	
-	/* Validate the zip */
-/*	do
-	{
-		printf ("\nEnter zip code: ");
-		zipok = validate_zip(zip);
-		if (zipok == 0) 
-			printf("Please re-enter a valid zip code. \n");	
-									   
-	} while (zipok == 0);
-	
-	printf("good zip code was: %.5d\n", atoi(zip));		
-	*/
 	
 	return 0;
 }
