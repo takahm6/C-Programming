@@ -117,18 +117,27 @@ int main(void)
      	safer_gets (info[i].addr.city, CITY);  
      	
 		/* Prompt user for street address */
-     	printf ("Enter state (2-letter code): ");
-     	safer_gets (info[i].addr.state, STATE);  
+		do
+		{
+     		printf ("Enter state (2-letter code): ");
+     		safer_gets (info[i].addr.state, STATE);  
+     		
+     		if ( validate_state(info[i].addr.state) == 0 )
+     		{
+     			printf("Invalid State Code, please re-enter.\n\n");
+     		}
+     		
+		} while ( validate_state(info[i].addr.state) == 0 ); /* End while */
      	
   		/* Prompt user for street address */
   		do
   		{
      		printf ("Enter zip code (5 digit): ");
      		zipok = validate_zip (info[i].addr.zip, ZIP);  
-			if (zipok == 0) 
+			if ( zipok == 0 ) 
 				printf("Please re-enter a valid zip code. \n");	
 									   
-		} while (zipok == 0); /* End while */
+		} while ( zipok == 0 ); /* End while */
 		
 		/* Prompt user for date */
 		do
@@ -153,18 +162,61 @@ int main(void)
 			(info[i].sdate.dd < 1 || info[i].sdate.dd > 31) || info[i].sdate.yyyy < 1 ); /* End while */
      	
 	}/* End for loop */
-	printf("\n");
 	
-	printf(report_title);
-	printf("\n");
+	/* Pring the report */
+	printf("\n\n");
+	for ( i = 1; i < (80 - strlen(report_title))/2; i++ )
+ 		printf(" ");// skips half of the white space to center the report title
+		printf("%s\n",report_title);
+		
+	/* ----------------------------------------------------------------------------- */
+	/* This underlines the entire title no matter how big (extra not required)*/
+	/* ----------------------------------------------------------------------------- */
+	for ( i = 1; i < (80 - strlen(report_title))/2; i++ )
+ 		printf(" ");// skips half of the white space to center the underlining
+	for ( i = 1; i <= strlen(report_title); i++ )// prints as many dashes as the length of the title
+		printf("-");
+				
+	printf("\n\n");	
+	
+	printf("Name \t\t\t\t Address \t\t\t Friended Date\n\n");
 	
 	for (i = 0; i < num_people; i++ )
 	{
-		printf("%s %s\n", info[i].fullname.first_name, info[i].fullname.last_name);
-		printf("%s %s, %s %.5d\n", info[i].addr.street, info[i].addr.city, info[i].addr.state, atoi(info[i].addr.zip));
-		printf("%d/%d/%d\n", info[i].sdate.mm, info[i].sdate.dd, info[i].sdate.yyyy);
+		printf("%s %s \t\t\t %s %s %s %.5d \t\t\t %d/%d/%d\n", info[i].fullname.first_name, 
+				info[i].fullname.last_name, info[i].addr.street, info[i].addr.city, 
+				info[i].addr.state, atoi(info[i].addr.zip),info[i].sdate.mm, 
+				info[i].sdate.dd, info[i].sdate.yyyy);
 	}
 	
+	return 0;
+}
+
+int validate_state(char state_code[])
+{
+	/* Variable Declarations */
+	int i;
+	char states[][3] = {"AL","AK","AZ","AR","CA","CO","CT","DE",
+						"DC","FL","GA","HI","ID","IL","IN","IA",
+						"KS","KY","LA","ME","MD","MA","MI","MN",
+						"MS","MO","MT","NE","NV","NH","NJ","NM",
+						"NY","NC","ND","OH","OK","OR","PA","RI",
+						"SC","SD","TN","TX","UT","VT","VA","WA",
+						"WV","WI","WY"};
+	
+	/* force it to upper case to test for a  match */
+	state_code[0] = toupper(state_code[0]);
+	state_code[1] = toupper(state_code[1]);
+			
+	for ( i = 0; i < 51; i++ )
+	{
+		if (strcmp(state_code, states[i]) == 0)
+		{
+			return 1;	/* Match found, it is valid */
+		} /* End if */
+	} /* End for */
+	
+	/* if no match, not a valid state code */
 	return 0;
 }
 
