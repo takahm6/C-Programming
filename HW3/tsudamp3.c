@@ -26,6 +26,8 @@ Objective:    The program prompts the user to enter some information
 /* Function Prototypes */
 int validate_state(char[]);
 int validate_zip(char[], int);
+int validate_date(int, int, int);
+int is_leap_year(int);
 void safer_gets(char[], int);
 
 /* Struct Definition */
@@ -62,15 +64,15 @@ int main(void)
 {
 	/* Variable Declarations */
 	char 				report_title[TITLE];		/* For the report title */
-	int 				num_people;				/* Non of people to process */	
-	char				c;						/* Used to clear the buffer */ 
-	int 				i;						/* Counter variable			*/
+	int 				num_people;					/* Non of people to process */	
+	char				c;							/* Used to clear the buffer */ 
+	int 				i;							/* Counter variable			*/
 	struct information 	info[MAXPPL];				/* Hold upto 20 ppl's data */
 	char				zip[ZIP];
 	int 				zipok;
 	
 	/* Prompt for the report title */
-	printf ("Please enter Report Title: ");
+	printf ("Please enter Report Title (Upto 29 characters): ");
 	safer_gets (report_title, TITLE); 
 	
 	/* Prompt for the number of record to process */
@@ -81,12 +83,12 @@ int main(void)
 		while ((c = getchar() != '\n') && c != EOF); /* clear buffer */
 		
 		/* only accept an input between 1 - 20 */
- 		if( num_people < 0 || num_people > 20 )
+ 		if( num_people < 1 || num_people > 20 )
  		{
  			printf("Please enter a value between 0 and 20.\n\n");
  		} /* End if */	
 		
-	} while ( num_people < 0 || num_people > 20 ); /* End while */
+	} while ( num_people < 1 || num_people > 20 ); /* End while */
 	
 	/* Prompt to enter the personal data */
 	for ( i = 0; i < num_people; i++ )
@@ -104,9 +106,8 @@ int main(void)
 
      	/* Prompt user for mid initial */
      	printf ("Enter middle initial: ");
-		scanf ("%c", &info[i].fullname.middle_initial);
-		while ((c = getchar() != '\n') && c != EOF); /* clear buffer */
-     	//safer_gets (info[i].fullname.middle_initial, 1);  
+		info[i].fullname.middle_initial = getchar ();
+		while ((c = getchar() != '\n') && c != EOF); /* clear buffer */ 
      	
 		/* Prompt user for street address */
      	printf ("Enter street address: ");
@@ -116,16 +117,17 @@ int main(void)
      	printf ("Enter city: ");
      	safer_gets (info[i].addr.city, CITY);  
      	
-		/* Prompt user for street address */
+		/* Prompt user for state code */
 		do
 		{
      		printf ("Enter state (2-letter code): ");
      		safer_gets (info[i].addr.state, STATE);  
      		
+     		/* Run a validation */
      		if ( validate_state(info[i].addr.state) == 0 )
      		{
      			printf("Invalid State Code, please re-enter.\n\n");
-     		}
+     		} /* End if */
      		
 		} while ( validate_state(info[i].addr.state) == 0 ); /* End while */
      	
@@ -146,20 +148,25 @@ int main(void)
      		scanf ("%d/%d/%d", &info[i].sdate.mm, &info[i].sdate.dd, &info[i].sdate.yyyy); 
      		while ((c = getchar() != '\n') && c != EOF); /* clear buffer */
      		
-     		if ( info[i].sdate.mm < 1 || info[i].sdate.mm > 12 )
+     		if ( validate_date(info[i].sdate.mm, info[i].sdate.dd, info[i].sdate.yyyy) == 0 )
      		{
      			printf("Invalid date. Please re-enter\n\n");
-     		} /* End if */
-     		if ( info[i].sdate.dd < 1 || info[i].sdate.dd > 31 )
-     		{
-     			printf("Invalid date. Please re-enter\n\n");
-     		} /* End if */
-     		if ( info[i].sdate.yyyy < 1 )
-     		{
-     			printf("Invalid date. Please re-enter\n\n");
-     		} /* End if */
-		} while ( (info[i].sdate.mm < 1 || info[i].sdate.mm > 12) || 
-			(info[i].sdate.dd < 1 || info[i].sdate.dd > 31) || info[i].sdate.yyyy < 1 ); /* End while */
+     		}
+     		
+     		/* Input validation */
+     		//if ( info[i].sdate.mm < 1 || info[i].sdate.mm > 12 )
+     		//{
+     		//	printf("Invalid date. Please re-enter\n\n");
+     		//} /* End if */
+     		//if ( info[i].sdate.dd < 1 || info[i].sdate.dd > 31 )
+     		//{
+     		//	printf("Invalid date. Please re-enter\n\n");
+     		//} /* End if */
+     		//if ( info[i].sdate.yyyy < 1 )
+     		//{
+     		//	printf("Invalid date. Please re-enter\n\n");
+     		//} /* End if */
+		} while ( validate_date(info[i].sdate.mm, info[i].sdate.dd, info[i].sdate.yyyy) == 0 ); /* End while */
      	
 	}/* End for loop */
 	
@@ -179,12 +186,12 @@ int main(void)
 				
 	printf("\n\n");	
 	
-	printf("Name \t\t\t\t Address \t\t\t Friended Date\n\n");
+	printf("Name \t\t\t\t Address \t\t Friended Date\n\n");
 	
 	for (i = 0; i < num_people; i++ )
 	{
-		printf("%s %s \t\t\t %s %s %s %.5d \t\t\t %d/%d/%d\n", info[i].fullname.first_name, 
-				info[i].fullname.last_name, info[i].addr.street, info[i].addr.city, 
+		printf("%s %s \t\t\t %s %.5d \t\t %d/%d/%d\n", info[i].fullname.first_name, 
+				info[i].fullname.last_name,  
 				info[i].addr.state, atoi(info[i].addr.zip),info[i].sdate.mm, 
 				info[i].sdate.dd, info[i].sdate.yyyy);
 	}
@@ -192,6 +199,8 @@ int main(void)
 	return 0;
 }
 
+/* This function validates a two-digit state code (US only) */
+/* Return 1 if the code is valid, return 0 otherwise 		*/
 int validate_state(char state_code[])
 {
 	/* Variable Declarations */
@@ -220,6 +229,7 @@ int validate_state(char state_code[])
 	return 0;
 }
 
+/* This function validates if the zip_code is zcode length */
 int validate_zip(char zip_code[], int zcode)
 {
   char 	ok = 1;		/* A flag, if it is 1 the zip is ok */
@@ -255,31 +265,122 @@ int validate_zip(char zip_code[], int zcode)
 
 	return ok;	
 		
-}// endf
+} /* End validate_zip */
 
+int validate_date (int month, int day, int year)
+{
+	/* Variable Declarations */
+	int state = 1;			/* if valid, 1. If not 0 */
+	
+	/* Check if the year is a 4-digit */
+	if ( year < 1000 || year > 9999 )
+	{
+		state = 0;
+		return state;
+	} /* End if */
+	if ( month < 1 || month > 12 )
+	{
+		state = 0;
+		return state;
+	} /* End if */
+	/* if February */
+	if ( month == 2 )
+	{
+		/* is it a leap year ? */
+		if ( is_leap_year(year) == 1 )
+		{
+			if ( day < 0 || day > 29 )
+			{
+				state = 0;
+				return state;
+			} /* End if */
+		} /* End if */
+		
+		/* Regular February */
+		else if ( day < 0 || day > 28 )
+		{
+			state = 0;
+			return state;
+		} /* End Else if */
+	}/* End if */
+	/* Any other month */
+	else if ( month == 4 || month == 6 || month == 9 || month == 11 )
+	{
+		if ( day < 0 || day > 30 )
+		{
+			state = 0;
+			return state;
+		} /* End if */
+	} /* End else */
+	
+	else 
+	{
+		if ( day < 0 || day > 31 )
+		{
+			state = 0;
+			return state;
+		} /* End if */
+	}/* End else */
+	
+	return state;
+} /* End of validate_date */
 
+/* How to determine a leap year, */
+int is_leap_year (int year)
+{
+	/* Variables Declarations */
+	int leap_year = 0;			/* if leap year 1, if not 0 */
+	
+	/* the year is divisible by 100, and by 400
+	   It is a leap year 				      */
+ 	if ( (year % 100 == 0 ) && (year % 400 == 0) ) 
+ 	{
+		leap_year = 1;
+		return leap_year;
+ 	} /* End if */
+ 	/* When the year is not divisible by 100,
+	   and divisible by 4, It is a leap year */
+	else if ( (year % 100 != 0 ) && (year % 4 == 0) )
+	{		
+		leap_year = 1;
+		return leap_year;
+	} /* end else if */
+	
+	/* anything else, not a leap year */
+	return leap_year;	
+} /* End of is_leap_year */
+
+/* safer_gets adapted from the course resource.   */
+/* Accepts a string input and make sure the input */
+/* does not over flow the allocated space		  */
 void safer_gets (char array[], int max_chars)
 {
 
-  int i;
+	int i;
 
-  for (i = 0; i < max_chars - 1; i++)
-  {
-     array[i] = getchar();
+  	for (i = 0; i < max_chars - 1; i++)
+  	{
+     	array[i] = getchar();
 
-
-     if (array[i] == '\n')
-        break;
+		/* if it was a new line character, end the loop */
+     	if (array[i] == '\n')
+     	{
+        	break;
+     	}
   
-   } /* end for */
+   	} /* end for */
 
 
-   if (i == max_chars - 1 )
+   	if (i == max_chars - 1 )
+   	{
+     	if (array[i] != '\n')
+     	{
+       		while (getchar() != '\n');
+     	} /* End if */
+     
+   	} /* End if */
 
-     if (array[i] != '\n')
-       while (getchar() != '\n');
-
-   array[i] = '\0';
- 
+	/* Terminate the string */
+ 	array[i] = '\0';
 
 } /* end safer_gets */
