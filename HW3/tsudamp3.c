@@ -6,22 +6,21 @@ Class:		  Intro to Programming with C Part 2
 Assignment:   #3 
 Objective:    The program prompts the user to enter some information 
 			  about up to 20 individuals and store them in a structure. 
-			  Input checks the state code and zip code.
-			  Once the data has been entered, it prints out a report the
-			  data.	   
+			  Checks the state code, zip code, and date,
+			  Once the data has been entered, it prints out a report.	   
 ------------------------------------------------------------------------------*/
 #include <stdio.h>
 #include<string.h> 
 
 /* Define values for the input length */
-#define TITLE 30
-#define LAST 15
-#define FIRST 10
-#define STREET 15
-#define CITY 10
-#define STATE 3
-#define ZIP 5
-#define MAXPPL 5
+#define TITLE 30 			/* Report title length */
+#define LAST 15				/* Last name length */
+#define FIRST 10			/* First Name length */
+#define STREET 15			/* Streed Address Length */
+#define CITY 10				/* City name Length */
+#define STATE 3				/* State Code Length */
+#define ZIP 5				/* Zip code length */
+#define MAXPPL 5			/* Max number of friends on a list */
 
 /* Function Prototypes */
 int validate_state(char[]);
@@ -72,6 +71,7 @@ int main(void)
 	int 				zipok;
 	
 	/* Prompt for the report title */
+	printf ("Welcome to Friends Program\n\n");
 	printf ("Please enter Report Title (Upto 29 characters): ");
 	safer_gets (report_title, TITLE); 
 	
@@ -148,41 +148,37 @@ int main(void)
      		scanf ("%d/%d/%d", &info[i].sdate.mm, &info[i].sdate.dd, &info[i].sdate.yyyy); 
      		while ((c = getchar() != '\n') && c != EOF); /* clear buffer */
      		
+     		/* validate date */
      		if ( validate_date(info[i].sdate.mm, info[i].sdate.dd, info[i].sdate.yyyy) == 0 )
      		{
      			printf("Invalid date. Please re-enter\n\n");
-     		}
+     		} /* End if */
      		
-     		/* Input validation */
-     		//if ( info[i].sdate.mm < 1 || info[i].sdate.mm > 12 )
-     		//{
-     		//	printf("Invalid date. Please re-enter\n\n");
-     		//} /* End if */
-     		//if ( info[i].sdate.dd < 1 || info[i].sdate.dd > 31 )
-     		//{
-     		//	printf("Invalid date. Please re-enter\n\n");
-     		//} /* End if */
-     		//if ( info[i].sdate.yyyy < 1 )
-     		//{
-     		//	printf("Invalid date. Please re-enter\n\n");
-     		//} /* End if */
 		} while ( validate_date(info[i].sdate.mm, info[i].sdate.dd, info[i].sdate.yyyy) == 0 ); /* End while */
      	
 	}/* End for loop */
 	
-	/* Pring the report */
+	/* Print the report */
 	printf("\n\n");
 	for ( i = 1; i < (80 - strlen(report_title))/2; i++ )
- 		printf(" ");// skips half of the white space to center the report title
-		printf("%s\n",report_title);
+	{
+ 		printf(" ");/* skips half of the white space to center the report title */
+	} /* End for */
+	
+	printf("%s\n",report_title);
 		
 	/* ----------------------------------------------------------------------------- */
-	/* This underlines the entire title no matter how big (extra not required)*/
+	/* This underlines the entire title no matter how big */
 	/* ----------------------------------------------------------------------------- */
 	for ( i = 1; i < (80 - strlen(report_title))/2; i++ )
- 		printf(" ");// skips half of the white space to center the underlining
-	for ( i = 1; i <= strlen(report_title); i++ )// prints as many dashes as the length of the title
+	{
+ 		printf(" "); /* skips half of the white space to center the underlining */
+	} /* End for */
+	
+	for ( i = 1; i <= strlen(report_title); i++ ) /* prints as many dashes as the length of the title */
+	{
 		printf("-");
+	} /* End for */
 				
 	printf("\n\n");	
 	
@@ -194,17 +190,18 @@ int main(void)
 				info[i].fullname.last_name,  
 				info[i].addr.state, atoi(info[i].addr.zip),info[i].sdate.mm, 
 				info[i].sdate.dd, info[i].sdate.yyyy);
-	}
+	} /* End for */
 	
 	return 0;
-}
+} /* End Main */
+
 
 /* This function validates a two-digit state code (US only) */
 /* Return 1 if the code is valid, return 0 otherwise 		*/
 int validate_state(char state_code[])
 {
 	/* Variable Declarations */
-	int i;
+	int i;										
 	char states[][3] = {"AL","AK","AZ","AR","CA","CO","CT","DE",
 						"DC","FL","GA","HI","ID","IL","IN","IA",
 						"KS","KY","LA","ME","MD","MA","MI","MN",
@@ -227,29 +224,31 @@ int validate_state(char state_code[])
 	
 	/* if no match, not a valid state code */
 	return 0;
-}
+	
+} /* End validate_state */
+
 
 /* This function validates if the zip_code is zcode length */
 int validate_zip(char zip_code[], int zcode)
 {
-  char 	ok = 1;		/* A flag, if it is 1 the zip is ok */
-  int 	i;			/* a counter */
+	char 	ok = 1;		/* A flag, if it is 1 the zip is ok */
+  	int 	i;			/* a counter */
 
-  /* Read name from input buffer, character by character,   */
-  /* up until the maximum number of characters in the array.*/
-  /* ------------------------------------------------------ */
+  	/* Read name from input buffer, character by character,   */
+  	/* up until the maximum number of characters in the array.*/
+  	/* ------------------------------------------------------ */
 
-  for (i = 0; i < zcode; i++)
-  {
-     zip_code[i] = getchar();
+  	for (i = 0; i < zcode; i++)
+  	{
+     	zip_code[i] = getchar();
      
-	 if(zip_code[i] == '\n')
-	    break;
-	 else
-	 	if(!isdigit(zip_code[i]))
-			ok = 0; 
+	 	if(zip_code[i] == '\n')
+	    	break;
+	 	else
+	 		if(!isdigit(zip_code[i]))
+				ok = 0; 
 	 
-   	} /* end for */
+	} /* end for */
    
    	/* if shorter than 5 digit, not ok */
    	if(i < zcode) 
@@ -267,6 +266,8 @@ int validate_zip(char zip_code[], int zcode)
 		
 } /* End validate_zip */
 
+
+/* This function checks the entered date is a real calender date */
 int validate_date (int month, int day, int year)
 {
 	/* Variable Declarations */
@@ -278,11 +279,13 @@ int validate_date (int month, int day, int year)
 		state = 0;
 		return state;
 	} /* End if */
+	
 	if ( month < 1 || month > 12 )
 	{
 		state = 0;
 		return state;
 	} /* End if */
+	
 	/* if February */
 	if ( month == 2 )
 	{
@@ -303,6 +306,7 @@ int validate_date (int month, int day, int year)
 			return state;
 		} /* End Else if */
 	}/* End if */
+	
 	/* Any other month */
 	else if ( month == 4 || month == 6 || month == 9 || month == 11 )
 	{
@@ -325,6 +329,7 @@ int validate_date (int month, int day, int year)
 	return state;
 } /* End of validate_date */
 
+
 /* How to determine a leap year, */
 int is_leap_year (int year)
 {
@@ -338,6 +343,7 @@ int is_leap_year (int year)
 		leap_year = 1;
 		return leap_year;
  	} /* End if */
+ 	
  	/* When the year is not divisible by 100,
 	   and divisible by 4, It is a leap year */
 	else if ( (year % 100 != 0 ) && (year % 4 == 0) )
@@ -347,16 +353,18 @@ int is_leap_year (int year)
 	} /* end else if */
 	
 	/* anything else, not a leap year */
-	return leap_year;	
+	return leap_year;
+		
 } /* End of is_leap_year */
+
 
 /* safer_gets adapted from the course resource.   */
 /* Accepts a string input and make sure the input */
 /* does not over flow the allocated space		  */
 void safer_gets (char array[], int max_chars)
 {
-
-	int i;
+	/* Variable */
+	int i;		/* a counter */
 
   	for (i = 0; i < max_chars - 1; i++)
   	{
@@ -366,7 +374,7 @@ void safer_gets (char array[], int max_chars)
      	if (array[i] == '\n')
      	{
         	break;
-     	}
+     	} /* End if */
   
    	} /* end for */
 
