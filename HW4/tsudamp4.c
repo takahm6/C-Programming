@@ -4,7 +4,10 @@ Author:       Makiko Tsuda
 Date:         10/24/2021
 Class:		  Intro to Programming with C Part 2
 Assignment:   #4 
-Objective:    The program print out an Inventory Report using pointers.	   
+Objective:    The program traverses the inventory array of structs
+   			  with an array as a struct member using a pointer,
+			  culculate the sum of each inventory, and 
+     		  prints out an Inventory Report.	   
 ------------------------------------------------------------------------------*/
 #include <stdio.h>
 
@@ -17,6 +20,7 @@ struct inven
 
 int main(void)
 {
+	/* Variable Declarations */
     struct inven inventory_array[] =
 	{	{"elbows",	 	87, 43,-98, 77,-69,0}, 
     	{"2''x6' pipe",	35,-21, 89,-57,  0,0}, 
@@ -39,10 +43,11 @@ int main(void)
 	/* a pointer to the items array inside the struct. Initialized later */ 
     int		*item_ptr;   
 
-
+	/* Initialize the counters */
 	x = 0;
 	i = 0;
-	 
+ 
+ 	
   	while ( x < count )
     {
 		/* pointing to the first item in the items array of the first struct member */
@@ -52,23 +57,24 @@ int main(void)
  		do
 		{
 			/* Referencing what item_ptr points to */
-	 		temp = temp + *(item_ptr++);
+	 		temp = temp + *item_ptr++;
 		 	i++;
 			 	 
 		} while(i < 5); /* End while */
  
  		/* Store the total for the item in the last array position */
- 		*(item_ptr++) = temp;
+ 		*item_ptr = temp;
 		
 		/* Reset the values for the next inventory */
 	  	temp = 0;
-
-     	i = 0;
+		i = 0;
+		/* Counter value goes up by 1 */
      	x++;
     	
     	/* Move the pointer to the next inventory */
     	inventory_ptr++;
-    } /* En while */
+    	
+    } /* End while */
  
  	/* Print the inventory report */
 	printf("\n\n");
