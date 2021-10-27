@@ -43,30 +43,32 @@ struct information
  }; // end struct info
  
 /* Function Prototypes */
-void sort_by_zip(struct information[], int);
-void sort_by_name(struct information[], int);
-void safer_gets(char[], int);
-int read_info(struct information[], FILE *);
-int print_report();
-int display_report(struct information[], int);
-int print_labels();
-void nice_time(char[]);
+void 	sort_by_zip(struct information[], int);
+void 	sort_by_name(struct information[], int);
+void 	safer_gets(char[], int);
+void 	nice_time(char[]);
+int 	read_info(struct information[], FILE *);
+int 	display_report(struct information[], int, char[]);
+int 	display_labels(struct information[], int);
+int 	print_report(FILE *, int, char[]);
+int 	print_labels(FILE *, int, char[], struct information[]);
+
  
 int main(void)
 {
 	/* Variable Declarations */
-	char	in_file_name[FILE_NAME_LEN];
-	char	report_file_name[FILE_NAME_LEN] = "report5.txt";
-	char	labels_file_name[FILE_NAME_LEN] = "label5.txt";
-	struct 	information info_array [NUM_INFO];
-	int		num_friend;
-	int 	option;
-	int 	fcount;
-	FILE 	*in_file_ptr, *out_file_ptr;
-	char 	c;													/* buffer clearing */
+	char		in_file_name[FILE_NAME_LEN];
+	char		report_file_name[FILE_NAME_LEN] = "report5.txt";
+	char		labels_file_name[FILE_NAME_LEN] = "label5.txt";
+	struct 		information info_array[NUM_INFO];
+	int			num_friend;
+	int 		option;
+	int 		fcount;
+	FILE 		*in_file_ptr, *out_file_ptr;
+	char 		c;													/* buffer clearing */
 	/* TIME STUFF */
-	char	date_and_time[25]=" ";
- 	char 	short_date_and_time[30]=" ";	
+	char		date_and_time[25]=" ";
+ 	char 		short_date_and_time[30]=" ";	
   	time_t 		rawtime;
     struct tm 	*timeptr;									
 	
@@ -94,8 +96,9 @@ int main(void)
 	/* read data from the file and store it to an array of struct */
 	fcount = read_info(info_array, in_file_ptr);
 	printf("You have %d Friends\n\n", fcount);
-	printf("First Friend %s \n", info_array[0].lfm.lname);
-	printf("Last Friend %s \n", info_array[4].lfm.lname);
+	
+	/* Calculate time */
+	nice_time(short_date_and_time); 
 	
 	/* Select an option */
 	do /* loop until '3' is entered */
@@ -111,13 +114,15 @@ int main(void)
 		
 		if (option == 1)
 		{
-			display_report(info_array, fcount);
-			print_report();
+			display_report(info_array, fcount, short_date_and_time);
+			print_report(out_file_ptr, fcount, report_file_name);
 			printf("(Report has been sent to %s)\n\n", report_file_name);
 		}
 		else if (option == 2)
 		{
-			print_labels();
+			sort_by_zip(info_array, fcount);
+			display_labels(info_array, fcount);
+			print_labels(out_file_ptr, fcount, labels_file_name, info_array);
 			printf("(Labels have been sent to %s)\n\n", labels_file_name);
 		}
 		else if (option == 3)
@@ -136,7 +141,6 @@ int main(void)
    	/* --------------------- */
  
    	fclose (in_file_ptr);
-   	fclose (out_file_ptr);
    	
    	getchar();  
    	
@@ -149,7 +153,7 @@ int main(void)
 void safer_gets (char array[], int max_chars)
 {
 	/* Variable */
-	int i;		/* a counter */
+	int 	i;		/* a counter */
 
   	for (i = 0; i < max_chars - 1; i++)
   	{
@@ -181,7 +185,7 @@ void safer_gets (char array[], int max_chars)
 int read_info(struct information info_array[NUM_INFO], FILE * in_file_ptr)
 {
 	/* Variable Declarations */
-	int i, count = 0;
+	int 	i, count = 0;
 	
 	   	/* Obtain information from input data file, store in structure. */
    	/* ------------------------------------------------------------ */
@@ -195,7 +199,7 @@ int read_info(struct information info_array[NUM_INFO], FILE * in_file_ptr)
        	fscanf (in_file_ptr, "%[^\n]\n", &info_array[i].address);     /* read street addr */
        	fscanf (in_file_ptr, "%[^\n]\n", &info_array[i].city);     /* read city */
        	fscanf (in_file_ptr, "%[^\n]\n", &info_array[i].state);     /* read state */
-      	fscanf (in_file_ptr, "%d\n", &info_array[i].zip);             /* read zip   */
+      	fscanf (in_file_ptr, "%lu\n", &info_array[i].zip);             /* read zip   */
 		fscanf (in_file_ptr, "%d/%d/%d", &info_array[i].fdate.mm, 
 				&info_array[i].fdate.dd, &info_array[i].fdate.yyyy); 
      	
@@ -215,48 +219,87 @@ int read_info(struct information info_array[NUM_INFO], FILE * in_file_ptr)
 }
 
 /* outputs the given array to the screen and a file */
-int print_report() 
+int print_report(FILE *out_file_ptr, int count, char report_file_name[]) 
 {
 	printf("print report\n");
 	return 0;
 	
 } /* end of print_report */
 
-int display_report(struct information info_array[], int count)
+int display_report(struct information info_array[], int count, char short_date_and_time[])
 {
 	/* Variable Declarations */
 	int		i;
 	
-	printf("\n\n");
-	printf("                       		Friends Report \n");
-	printf("                       		---------------- \n\n");
 
-   	printf("	Name 		Address 		City 		St 		Zip 		  Friended\n");
-	printf("==========================================================================\n");
+		
+	printf("\n\n");
+	printf("                       		Friends Report 	%s\n", short_date_and_time);
+	printf("                       		-------------------------------------------- \n\n");
+
+   	printf("Name 				Address 		City 		St 	Zip 		Friended\n");
+	printf("===============================================================================\n");
 
 	printf("\n");
 	
-	printf("%-13s, %10s %c%10s%5s%6d%5s %d/%d/%d\n", info_array[1].lfm.fname, 
-			info_array[1].lfm.lname,info_array[1].lfm.middle_initial,
-			info_array[1].address,info_array[1].city,info_array[1].state,
-			info_array[1].zip,info_array[1].fdate.mm, info_array[1].fdate.dd, 
-			info_array[1].fdate.yyyy);
-	/*
 	for ( i = 0; i < count; i++ )
 	{
-		printf("%-13s, %10s %c%10s%5s%6d%5s %d/%d/%d\n", info_array[i].lfm.fname, 
+		printf("%-10s, %-15s %-3c %-20s %-10s %-6s %5.5ld %5.02d/%02d/%d\n", info_array[i].lfm.fname, 
 			info_array[i].lfm.lname,info_array[i].lfm.middle_initial,
 			info_array[i].address,info_array[i].city,info_array[i].state,
-			info_array[i].zip,info_array[i].fdate.mm, info_array[i].fdate.dd, 
+			info_array[i].zip,info_array[i].fdate.mm,info_array[i].fdate.dd, 
 			info_array[i].fdate.yyyy);
-	}
-	*/
+	} /* end for */
+	
 	return 0;
 }
 
-int print_labels()
+int display_labels(struct information info_array[], int count)
 {
-	printf("print labels\n");
+	/* Variable Declarations */
+	int		i;
+	
+	printf("Shipping Labels\n\n");
+	
+	for ( i = 0; i < count; i++ )
+	{
+		printf("%s %c %s\n", info_array[i].lfm.fname,
+				info_array[i].lfm.middle_initial,info_array[i].lfm.lname);
+		printf("%s\n",info_array[i].address);
+		printf("%s %s %5.5ld\n\n\n", info_array[i].city,info_array[i].state,
+				info_array[i].zip); 
+	}
+	
+	return 0;
+}
+
+
+int print_labels(FILE *out_file_ptr, int count, char label_file_name[], struct information info_array[])
+{
+	/* Variable Declarations */
+	int 	i;
+	
+	out_file_ptr = fopen (label_file_name, "w");
+
+	/* the File is invalid */
+   	if ( out_file_ptr == NULL )
+   	{
+       printf ("\n Cannot open file labels.txt for writing.\n");
+       return 1;
+   	} /* end if */
+   	
+	fprintf(out_file_ptr, "Shipping Labels\n\n");
+	
+	for ( i = 0; i < count; i++ )
+	{
+		fprintf(out_file_ptr, "%s %c %s\n", info_array[i].lfm.fname,
+				info_array[i].lfm.middle_initial,info_array[i].lfm.lname);
+		fprintf(out_file_ptr, "%s\n",info_array[i].address);
+		fprintf(out_file_ptr, "%s %s %5.5ld\n\n\n", info_array[i].city,info_array[i].state,
+				info_array[i].zip); 
+	} /* end for */
+	
+	fclose (out_file_ptr);
 	
 	return 0;
 }
@@ -326,3 +369,28 @@ void nice_time(char str2[])
 	strcat(str2,ampm);
 
 }// end nice time
+
+void  sort_by_zip (struct information info_array[], int count)
+{
+	/* Variable Declarations */
+    int  i, j;
+    struct information temp_info;
+    
+ 	for ( i = 0;  i < count - 1;  ++i )
+ 	{
+        for ( j = i + 1;  j < count;  ++j )
+        {
+            if ( info_array[i].zip > info_array[j].zip ) 
+			{
+                temp_info = info_array[i];
+                info_array[i] = info_array[j];
+                info_array[j] = temp_info;
+            } /* end if */
+            
+        } /* end for */
+        
+	} /* end for */
+	
+} /* end sort_by_zip */
+
+
