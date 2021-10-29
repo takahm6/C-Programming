@@ -50,8 +50,8 @@ void 	nice_time(char[]);
 int 	read_info(struct information[], FILE *);
 int 	display_report(struct information[], int, char[]);
 int 	display_labels(struct information[], int);
-int 	print_report(FILE *, int, char[]);
-int 	print_labels(FILE *, int, char[], struct information[]);
+int 	print_report(FILE *, int, struct information[], char[]);
+int 	print_labels(FILE *, int, struct information[]);
 
  
 int main(void)
@@ -95,7 +95,7 @@ int main(void)
 	
 	/* read data from the file and store it to an array of struct */
 	fcount = read_info(info_array, in_file_ptr);
-	printf("You have %d Friends\n\n", fcount);
+	printf("\nYou have %d Friends\n\n", fcount);
 	
 	/* Calculate time */
 	nice_time(short_date_and_time); 
@@ -114,26 +114,56 @@ int main(void)
 		
 		if (option == 1)
 		{
+			/* open the output file */
+			out_file_ptr = fopen (report_file_name, "w");
+			
+			if ( out_file_ptr == NULL )
+   			{
+       			printf ("\n Cannot open file labels.txt for writing.\n");
+       			return 1;
+   			} /* end if */
+   			
+			sort_by_name(info_array, fcount);
 			display_report(info_array, fcount, short_date_and_time);
-			print_report(out_file_ptr, fcount, report_file_name);
-			printf("(Report has been sent to %s)\n\n", report_file_name);
-		}
+			print_report(out_file_ptr, fcount, info_array, short_date_and_time);
+			printf("\n\t\t(Report has been sent to %s)\n\n", report_file_name);
+			
+			/* close the output file */
+			fclose (out_file_ptr);
+			
+		} /* end if */
+		
 		else if (option == 2)
 		{
+			out_file_ptr = fopen (labels_file_name, "w");
+
+			/* the File is invalid */
+   			if ( out_file_ptr == NULL )
+   			{
+       			printf ("\n Cannot open file labels.txt for writing.\n");
+       			return 1;
+   			} /* end if */
+   	
 			sort_by_zip(info_array, fcount);
 			display_labels(info_array, fcount);
-			print_labels(out_file_ptr, fcount, labels_file_name, info_array);
-			printf("(Labels have been sent to %s)\n\n", labels_file_name);
-		}
+			print_labels(out_file_ptr, fcount, info_array);
+			printf("\n\t\t(Labels have been sent to %s)\n\n", labels_file_name);
+			
+			/* close the output file */
+			fclose (out_file_ptr);
+					
+		} /* end option 2 else if */
+		
 		else if (option == 3)
 		{
 			printf("Thank you for using the program\n");
 			return 0;
-		}
+		} /* end option3 else if */
+		
 		else
 		{
-			printf("Invalid option. Please re-enter:\n");
-		}
+			printf("\nInvalid option. Please re-enter:\n\n");
+		} /* end else */
 		
 	} while (option != 3); /* end while */
 	
@@ -145,7 +175,7 @@ int main(void)
    	getchar();  
    	
 	return 0;
-}
+} /* end main */
 
 /* safer_gets adapted from the course resource.   */
 /* Accepts a string input and make sure the input */
@@ -215,13 +245,51 @@ int read_info(struct information info_array[NUM_INFO], FILE * in_file_ptr)
    	}  /* end for loop */
 	
 	/* return the number of record */
-	return count;	
-}
+	return count;
+		
+} /* end read_info */
 
 /* outputs the given array to the screen and a file */
-int print_report(FILE *out_file_ptr, int count, char report_file_name[]) 
+int print_report(FILE *out_file_ptr, int count, struct information info_array[], char short_date_and_time[]) 
 {
-	printf("print report\n");
+	/* Variable Declarations */
+	int		i;
+	char	fullname[15]; 		/* store concat name */
+	char	temp_middle[3]; 	/* for middle initial */
+	
+		
+	fprintf(out_file_ptr, "\n\n");
+	fprintf(out_file_ptr, "                       		Friends Report 	%s\n", short_date_and_time);
+	fprintf(out_file_ptr, "                       		-------------------------------------------- \n\n");
+
+   	fprintf(out_file_ptr, "Name 						 Address 		     City 		     St 	 Zip 	  Friended\n");
+	fprintf(out_file_ptr, "===============================================================================================\n");
+
+	fprintf(out_file_ptr, "\n");
+	
+	/* Concat the first, last, and the middle initial for all friends */
+	
+	for ( i = 0; i < count; i++ )
+	{
+		/* copy the middle initial to an array */
+		temp_middle[0] = ' ';
+		temp_middle[1] = info_array[i].lfm.middle_initial;
+		temp_middle[2] = '\0';
+		
+		/* concat the name elements, format to output*/
+		strcpy(fullname, info_array[i].lfm.lname);
+		strcat(fullname, ", ");
+		strcat(fullname, info_array[i].lfm.fname);
+		strcat(fullname, temp_middle);
+		/* terminate the string*/
+		fullname[strlen(fullname)] = '\0';
+		
+		fprintf(out_file_ptr, "%-28s %-20s %-15s %-6s %5.5ld %5.02d/%02d/%d\n", fullname,
+			info_array[i].address,info_array[i].city,info_array[i].state,
+			info_array[i].zip,info_array[i].fdate.mm,info_array[i].fdate.dd, 
+			info_array[i].fdate.yyyy);
+	} /* end for */
+		
 	return 0;
 	
 } /* end of print_report */
@@ -230,36 +298,53 @@ int display_report(struct information info_array[], int count, char short_date_a
 {
 	/* Variable Declarations */
 	int		i;
+	char	fullname[15]; 		/* store concat name */
+	char	temp_middle[3]; 	/* for middle initial */
 	
-
 		
 	printf("\n\n");
 	printf("                       		Friends Report 	%s\n", short_date_and_time);
 	printf("                       		-------------------------------------------- \n\n");
 
-   	printf("Name 				Address 		City 		St 	Zip 		Friended\n");
-	printf("===============================================================================\n");
+   	printf("Name 			     Address 	    	  City 	         St 	 Zip 	  Friended\n");
+	printf("===================================================================================================\n");
 
 	printf("\n");
 	
+	/* Concat the first, last, and the middle initial for all friends */
+	
 	for ( i = 0; i < count; i++ )
 	{
-		printf("%-10s, %-15s %-3c %-20s %-10s %-6s %5.5ld %5.02d/%02d/%d\n", info_array[i].lfm.fname, 
-			info_array[i].lfm.lname,info_array[i].lfm.middle_initial,
+		/* copy the middle initial to an array */
+		temp_middle[0] = ' ';
+		temp_middle[1] = info_array[i].lfm.middle_initial;
+		temp_middle[2] = '\0';
+		
+		/* concat the name elements */
+		strcpy(fullname, info_array[i].lfm.lname);
+		strcat(fullname, ", ");
+		strcat(fullname, info_array[i].lfm.fname);
+		strcat(fullname, temp_middle);
+		/* terminate the string*/
+		fullname[strlen(fullname)] = '\0';
+		
+		printf("%-28s %-20s %-15s %-6s %5.5ld %5.02d/%02d/%d\n", fullname,
 			info_array[i].address,info_array[i].city,info_array[i].state,
 			info_array[i].zip,info_array[i].fdate.mm,info_array[i].fdate.dd, 
 			info_array[i].fdate.yyyy);
 	} /* end for */
 	
 	return 0;
-}
+} /* end display_report */
 
+/* display the sorted labels to screen */
 int display_labels(struct information info_array[], int count)
 {
 	/* Variable Declarations */
 	int		i;
 	
-	printf("Shipping Labels\n\n");
+	/* just some spacer */
+	printf("\n\n");
 	
 	for ( i = 0; i < count; i++ )
 	{
@@ -268,27 +353,17 @@ int display_labels(struct information info_array[], int count)
 		printf("%s\n",info_array[i].address);
 		printf("%s %s %5.5ld\n\n\n", info_array[i].city,info_array[i].state,
 				info_array[i].zip); 
-	}
+	} /* end for */
 	
 	return 0;
-}
+} /* end display_labels */
 
-
-int print_labels(FILE *out_file_ptr, int count, char label_file_name[], struct information info_array[])
+/* print sorted (by zip) labels to a file */
+int print_labels(FILE *out_file_ptr, int count, struct information info_array[])
 {
 	/* Variable Declarations */
 	int 	i;
 	
-	out_file_ptr = fopen (label_file_name, "w");
-
-	/* the File is invalid */
-   	if ( out_file_ptr == NULL )
-   	{
-       printf ("\n Cannot open file labels.txt for writing.\n");
-       return 1;
-   	} /* end if */
-   	
-	fprintf(out_file_ptr, "Shipping Labels\n\n");
 	
 	for ( i = 0; i < count; i++ )
 	{
@@ -299,25 +374,22 @@ int print_labels(FILE *out_file_ptr, int count, char label_file_name[], struct i
 				info_array[i].zip); 
 	} /* end for */
 	
-	fclose (out_file_ptr);
-	
 	return 0;
-}
+} /* end print_labels */
 
-// function for time format
 
+/* function for time format, adapted from s sample program for this class */
 void nice_time(char str2[])
 {
+	/* Variable Declarations */
+    char 		str1[27],  ampm[5] = "a.m.";
+	char 		day[4],mon[4],dow[3],tim[9], yr[5];
+	char 		hra[3];
+	int 		i,j, hr;
 
-    char str1[27],  ampm[5] = "a.m.";
-	char day[4],mon[4],dow[3],tim[9], yr[5];
-	char hra[3];
-	int i,j, hr;
-
-	/* time stuff starts here */
-	
-	time_t rawtime;   
-    struct tm *timeptr;
+	/* time stuff starts here */	
+	time_t 		rawtime;   
+    struct tm 	*timeptr;
     
     time(&rawtime);
   	timeptr = localtime(&rawtime);
@@ -368,9 +440,10 @@ void nice_time(char str2[])
 	strcat(str2," ");
 	strcat(str2,ampm);
 
-}// end nice time
+}/* end nice time */
 
-void  sort_by_zip (struct information info_array[], int count)
+/* sort the struct of people information by zip code */
+void  sort_by_zip(struct information info_array[], int count)
 {
 	/* Variable Declarations */
     int  i, j;
@@ -393,4 +466,57 @@ void  sort_by_zip (struct information info_array[], int count)
 	
 } /* end sort_by_zip */
 
+
+/* A function to sort by last name, then first name, then middle initial */
+void sort_by_name(struct information info_array[], int count)
+{
+	/* Variable Declarations */
+    int  i, j, k;
+    struct information temp_info;
+    
+    for ( i = 0; i < count - 1;  ++i )
+    {
+    	for ( j = i + 1;  j < count;  ++j )
+        {
+        	if ( strcmp(info_array[i].lfm.lname, info_array[j].lfm.lname) > 0 )
+        	{	
+        		/* swap */
+          		temp_info = info_array[i];
+                info_array[i] = info_array[j];
+                info_array[j] = temp_info;
+                
+        	}/* end if swap needed */
+        	
+        	else if ( strcmp(info_array[i].lfm.lname, info_array[j].lfm.lname) == 0 )
+        	{ 
+				/* Same last names, compare first names */
+       			if ( strcmp(info_array[i].lfm.fname, info_array[j].lfm.fname) > 0 )
+        		{
+        			/* swap */
+          			temp_info = info_array[i];
+                	info_array[i] = info_array[j];
+                	info_array[j] = temp_info;
+        		} /* end if to compare first name */
+        		
+				/* First names also the same,*/
+        		else if ( strcmp(info_array[i].lfm.fname, info_array[j].lfm.fname) == 0 )
+        		{
+        			/* compare middle initials */
+        			if ( info_array[i].lfm.middle_initial > info_array[j].lfm.middle_initial ) 
+					{
+        				/* swap */
+          				temp_info = info_array[i];
+                		info_array[i] = info_array[j];
+                		info_array[j] = temp_info;
+        			} /* end if to compare middle initials */
+        			
+        		} /*end else if */
+        		
+        	} /* end else if the same last names */
+        	
+        } /* end for inner loop */
+        
+    } /* end for outer loop */
+    
+} /* end sort by name */
 
